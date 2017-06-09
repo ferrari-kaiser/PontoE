@@ -38,7 +38,7 @@ import static android.Manifest.permission.READ_CONTACTS;
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor>, onActivityResult {
+public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
 
     /**
      * Id to identity READ_CONTACTS permission request.
@@ -102,32 +102,47 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         fingerPrint.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
-                startActivityForResult(intent, 0);
+
+//                Intent intent = new Intent(getApplicationContext(), PontoActivity.class);
+//                startActivity(intent);
+
+                tirarFoto();
+
             }
         });
-
     }
 
-    public void tirarFoto(View view){
+    private void tirarFoto() {
 
         Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
         startActivityForResult(intent, 0);
     }
 
 
-    protected void onActivityForResult(int requestCode, int resultCode, Intent data){
-        if (data != null){
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+//        super.onActivityResult(requestCode, resultCode, data);
+        if (intent != null){
 
-            Bundle bundle = data.getExtras();
-            if (bundle != null){
+            Bundle bundle = intent.getExtras();
+            if (bundle!= null){
+
+
+//                ((ImageView) findViewById(R.id.img_photo)).setImageURI(data.getData());
 
                 Bitmap img = (Bitmap) bundle.get("data");
+                PontoActivity.imagem = img;
+
+//                ImageView iv = (ImageView) findViewById(R.id.img_photo);
+//                iv.setImageBitmap(img);
+//
+                Intent intent1 = new Intent(getApplicationContext(), PontoActivity.class);
+                startActivity(intent1);
+
+
             }
         }
-
     }
-
 
     private void populateAutoComplete() {
         if (!mayRequestContacts()) {
@@ -230,7 +245,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         return email.contains("@");
     }
 
-        private boolean isPasswordValid(String password) {
+    private boolean isPasswordValid(String password) {
         //TODO: Replace this with your own logic
         return password.length() > 4;
     }
@@ -315,72 +330,72 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     }
 
 
-    private interface ProfileQuery {
-        String[] PROJECTION = {
-                ContactsContract.CommonDataKinds.Email.ADDRESS,
-                ContactsContract.CommonDataKinds.Email.IS_PRIMARY,
-        };
+private interface ProfileQuery {
+    String[] PROJECTION = {
+            ContactsContract.CommonDataKinds.Email.ADDRESS,
+            ContactsContract.CommonDataKinds.Email.IS_PRIMARY,
+    };
 
-        int ADDRESS = 0;
-        int IS_PRIMARY = 1;
+    int ADDRESS = 0;
+    int IS_PRIMARY = 1;
+}
+
+/**
+ * Represents an asynchronous login/registration task used to authenticate
+ * the user.
+ */
+public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
+
+    private final String mEmail;
+    private final String mPassword;
+
+    UserLoginTask(String email, String password) {
+        mEmail = email;
+        mPassword = password;
     }
 
-    /**
-     * Represents an asynchronous login/registration task used to authenticate
-     * the user.
-     */
-    public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
+    @Override
+    protected Boolean doInBackground(Void... params) {
+        // TODO: attempt authentication against a network service.
 
-        private final String mEmail;
-        private final String mPassword;
-
-        UserLoginTask(String email, String password) {
-            mEmail = email;
-            mPassword = password;
+        try {
+            // Simulate network access.
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            return false;
         }
 
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
-
-            try {
-                // Simulate network access.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                return false;
-            }
-
-            for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail)) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
-                }
-            }
-
-            // TODO: register the new account here.
-            return true;
-        }
-
-        @Override
-        protected void onPostExecute(final Boolean success) {
-            mAuthTask = null;
-            showProgress(false);
-
-            if (success) {
-                finish();
-            } else {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
+        for (String credential : DUMMY_CREDENTIALS) {
+            String[] pieces = credential.split(":");
+            if (pieces[0].equals(mEmail)) {
+                // Account exists, return true if the password matches.
+                return pieces[1].equals(mPassword);
             }
         }
 
-        @Override
-        protected void onCancelled() {
-            mAuthTask = null;
-            showProgress(false);
+        // TODO: register the new account here.
+        return true;
+    }
+
+    @Override
+    protected void onPostExecute(final Boolean success) {
+        mAuthTask = null;
+        showProgress(false);
+
+        if (success) {
+            finish();
+        } else {
+            mPasswordView.setError(getString(R.string.error_incorrect_password));
+            mPasswordView.requestFocus();
         }
     }
+
+    @Override
+    protected void onCancelled() {
+        mAuthTask = null;
+        showProgress(false);
+    }
+}
 
 }
 
